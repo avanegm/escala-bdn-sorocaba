@@ -15,6 +15,21 @@ Sistema web para gerenciamento das escalas dos ministérios da Igreja Bola de Ne
 - Supabase
 - Tailwind CSS
 
+## Arquitetura
+
+O projeto utiliza a seguinte stack:
+
+- Next.js (App Router)
+- PostgreSQL
+- Prisma ORM
+- Supabase (Database, Auth e Storage)
+- Vercel (Deploy)
+- Resend (Envio de e-mails)
+
+A documentação completa da arquitetura encontra-se em:
+
+docs/02-Arquitetura-Tecnica.md
+
 ## Status do Projeto
 
 - [x] Ideia validada
