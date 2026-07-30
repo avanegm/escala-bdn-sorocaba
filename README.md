@@ -34,7 +34,7 @@ docs/02-Arquitetura-Tecnica.md
 
 - [x] Ideia validada
 - [x] PRD concluído
-- [ ] Arquitetura
+- [x] Arquitetura
 - [ ] Banco de Dados
 - [ ] Protótipos
 - [ ] Backend
