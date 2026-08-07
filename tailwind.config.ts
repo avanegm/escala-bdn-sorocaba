@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss"
+import animate from "tailwindcss-animate";
 
 // Tokens de cor definidos no documento de Design System (seção 3.1).
 // Os valores concretos vivem em app/globals.css como variáveis CSS em HSL
@@ -61,7 +62,7 @@ const config: Config = {
       // não são sobrescritos.
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 }
 
 export default config
