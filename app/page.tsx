@@ -1,9 +1,12 @@
-export default function RootPage() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
-      <p className="text-sm text-muted-foreground">
-        Escala Bola de Neve Sorocaba — projeto em configuração (Fase 1).
-      </p>
-    </main>
-  )
+import { redirect } from "next/navigation";
+import { obterUsuarioAutenticado } from "@/lib/auth/session";
+
+export default async function RootPage() {
+  const usuario = await obterUsuarioAutenticado();
+
+  if (usuario) {
+    redirect("/dashboard");
+  }
+
+  redirect("/login");
 }

@@ -1,42 +1,83 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  CalendarDays,
+  LayoutDashboard,
+  LogOut,
+  ShieldCheck,
+  UserCircle,
+  Users,
+} from "lucide-react";
 
 const itens = [
   {
     nome: "Dashboard",
-    href: "#",
+    href: "/",
+    icon: LayoutDashboard,
   },
   {
     nome: "Ministérios",
-    href: "#",
+    href: "/ministerios",
+    icon: Users,
   },
   {
     nome: "Escalas",
-    href: "#",
+    href: "/escalas",
+    icon: CalendarDays,
   },
   {
     nome: "Administração",
-    href: "#",
+    href: "/administracao",
+    icon: ShieldCheck,
   },
   {
-    nome: "Perfil",
-    href: "#",
+    nome: "Meu Perfil",
+    href: "/perfil",
+    icon: UserCircle,
   },
 ];
 
 export function Sidebar() {
+  const pathname = usePathname();
+
   return (
-    <aside className="w-64 border-r bg-card">
-      <nav className="flex flex-col gap-1 p-4">
-        {itens.map((item) => (
-          <Link
-            key={item.nome}
-            href={item.href}
-            className="rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent"
-          >
-            {item.nome}
-          </Link>
-        ))}
+    <aside className="flex h-full w-64 flex-col border-r bg-card">
+      <div className="border-b p-6">
+        <h2 className="text-xl font-bold text-primary">🕊 Escala BDN</h2>
+        <p className="text-sm text-muted-foreground">Sorocaba</p>
+      </div>
+
+      <nav className="flex flex-1 flex-col gap-2 p-4">
+        {itens.map((item) => {
+          const Icon = item.icon;
+
+          const ativo = pathname === item.href;
+
+          return (
+            <Link
+              key={item.nome}
+              href={item.href}
+              className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
+                ativo
+                  ? "bg-primary text-white"
+                  : "hover:bg-accent/20"
+              }`}
+            >
+              <Icon size={20} />
+              <span>{item.nome}</span>
+            </Link>
+          );
+        })}
       </nav>
+
+      <div className="border-t p-4">
+        <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-accent/20">
+          <LogOut size={20} />
+          <span>Sair</span>
+        </button>
+      </div>
     </aside>
   );
 }

@@ -8,9 +8,108 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ─────────────────────────────────────────────
-// ENUMS
-// ─────────────────────────────────────────────
+model Usuario {
+  id                 String              @id @db.Uuid
+  nome               String
+  email              String              @unique
+  papelGlobal        PapelGlobal?        @map("papel_global")
+  ativo              Boolean             @default(true)
+  criadoEm           DateTime            @default(now()) @map("criado_em")
+  atualizadoEm       DateTime            @updatedAt @map("atualizado_em")
+  escalas            Escala[]
+  logsAuditoria      LogAuditoria[]
+  vinculosMinisterio UsuarioMinisterio[]
+
+  @@index([papelGlobal])
+  @@map("usuarios")
+}
+
+model Ministerio {
+  id               String              @id @default(uuid()) @db.Uuid
+  nome             String              @unique
+  logoUrl          String?             @map("logo_url")
+  ativo            Boolean             @default(true)
+  criadoEm         DateTime            @default(now()) @map("criado_em")
+  atualizadoEm     DateTime            @updatedAt @map("atualizado_em")
+  escalas          Escala[]
+  vinculosUsuarios UsuarioMinisterio[]
+
+  @@index([ativo])
+  @@map("ministerios")
+}
+
+model UsuarioMinisterio {
+  id           String          @id @default(uuid()) @db.Uuid
+  usuarioId    String          @map("usuario_id") @db.Uuid
+  ministerioId String          @map("ministerio_id") @db.Uuid
+  papel        PapelMinisterio
+  criadoEm     DateTime        @default(now()) @map("criado_em")
+  ministerio   Ministerio      @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
+  usuario      Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, ministerioId], name: "usuario_ministerio_unico")
+  @@index([ministerioId])
+  @@index([usuarioId])
+  @@map("usuarios_ministerios")
+}
+
+model Culto {
+  id              String    @id @default(uuid()) @db.Uuid
+  dataHoraCulto   DateTime  @unique @map("data_hora_culto")
+  dataHoraChegada DateTime  @map("data_hora_chegada")
+  tipo            TipoCulto
+  nome            String?
+  criadoEm        DateTime  @default(now()) @map("criado_em")
+  escalas         Escala[]
+
+  @@index([tipo])
+  @@map("cultos")
+}
+
+model Escala {
+  id                String            @id @default(uuid()) @db.Uuid
+  usuarioId         String            @map("usuario_id") @db.Uuid
+  ministerioId      String            @map("ministerio_id") @db.Uuid
+  cultoId           String            @map("culto_id") @db.Uuid
+  statusConfirmacao StatusConfirmacao @default(PENDENTE) @map("status_confirmacao")
+  tokenConfirmacao  String?           @unique @map("token_confirmacao")
+  tokenExpiraEm     DateTime?         @map("token_expira_em")
+  criadoEm          DateTime          @default(now()) @map("criado_em")
+  atualizadoEm      DateTime          @updatedAt @map("atualizado_em")
+  culto             Culto             @relation(fields: [cultoId], references: [id], onDelete: Cascade)
+  ministerio        Ministerio        @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
+  usuario           Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, cultoId], name: "conflito_agenda_usuario_culto")
+  @@index([ministerioId, cultoId])
+  @@index([cultoId])
+  @@map("escalas")
+}
+
+model ConfiguracaoSistema {
+  id                                 Int      @id @default(1)
+  diasAntecedenciaAberturaProximoMes Int      @default(7) @map("dias_antecedencia_abertura_proximo_mes")
+  horasAntecedenciaLembretePresenca  Int      @default(24) @map("horas_antecedencia_lembrete_presenca")
+  atualizadoEm                       DateTime @updatedAt @map("atualizado_em")
+
+  @@map("configuracoes_sistema")
+}
+
+model LogAuditoria {
+  id              String        @id @default(uuid()) @db.Uuid
+  usuarioId       String?       @map("usuario_id") @db.Uuid
+  acao            AcaoAuditoria
+  entidadeAfetada String        @map("entidade_afetada")
+  entidadeId      String?       @map("entidade_id")
+  detalhes        Json?
+  criadoEm        DateTime      @default(now()) @map("criado_em")
+  usuario         Usuario?      @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
+  @@index([entidadeAfetada, entidadeId])
+  @@index([criadoEm])
+  @@map("logs_auditoria")
+}
 
 enum PapelGlobal {
   ADMIN
@@ -45,144 +144,4 @@ enum AcaoAuditoria {
   EXCLUSAO_MINISTERIO
   ALTERACAO_CONFIGURACAO
   EDICAO_ESCALA_EM_NOME_DE
-}
-
-// ─────────────────────────────────────────────
-// USUÁRIO
-// ─────────────────────────────────────────────
-
-model Usuario {
-  // Mesmo id do usuário em auth.users (Supabase Auth).
-  // Não é gerado pelo Prisma — é atribuído no momento em que
-  // o registro de perfil é criado, espelhando o id do Auth.
-  id           String       @id @db.Uuid
-  nome         String
-  email        String       @unique
-  papelGlobal  PapelGlobal? @map("papel_global")
-  ativo        Boolean      @default(true)
-  criadoEm     DateTime     @default(now()) @map("criado_em")
-  atualizadoEm DateTime     @updatedAt @map("atualizado_em")
-
-  vinculosMinisterio UsuarioMinisterio[]
-  escalas            Escala[]
-  logsAuditoria      LogAuditoria[]
-
-  @@index([papelGlobal])
-  @@map("usuarios")
-}
-
-// ─────────────────────────────────────────────
-// MINISTÉRIO
-// ─────────────────────────────────────────────
-
-model Ministerio {
-  id           String   @id @default(uuid()) @db.Uuid
-  nome         String   @unique
-  logoUrl      String?  @map("logo_url")
-  ativo        Boolean  @default(true)
-  criadoEm     DateTime @default(now()) @map("criado_em")
-  atualizadoEm DateTime @updatedAt @map("atualizado_em")
-
-  vinculosUsuarios UsuarioMinisterio[]
-  escalas          Escala[]
-
-  @@index([ativo])
-  @@map("ministerios")
-}
-
-// ─────────────────────────────────────────────
-// VÍNCULO USUÁRIO × MINISTÉRIO (papel de Líder/Membro)
-// ─────────────────────────────────────────────
-
-model UsuarioMinisterio {
-  id           String          @id @default(uuid()) @db.Uuid
-  usuarioId    String          @map("usuario_id") @db.Uuid
-  ministerioId String          @map("ministerio_id") @db.Uuid
-  papel        PapelMinisterio
-  criadoEm     DateTime        @default(now()) @map("criado_em")
-
-  usuario    Usuario    @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  ministerio Ministerio @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
-
-  @@unique([usuarioId, ministerioId], name: "usuario_ministerio_unico")
-  @@index([ministerioId])
-  @@index([usuarioId])
-  @@map("usuarios_ministerios")
-}
-
-// ─────────────────────────────────────────────
-// CULTO (slot de serviço, gerado automaticamente ou extraordinário)
-// ─────────────────────────────────────────────
-
-model Culto {
-  id              String    @id @default(uuid()) @db.Uuid
-  dataHoraCulto   DateTime  @unique @map("data_hora_culto")
-  dataHoraChegada DateTime  @map("data_hora_chegada")
-  tipo            TipoCulto
-  nome            String?
-  criadoEm        DateTime  @default(now()) @map("criado_em")
-
-  escalas Escala[]
-
-  @@index([tipo])
-  @@map("cultos")
-}
-
-// ─────────────────────────────────────────────
-// ESCALA (usuário disponível para servir em um ministério, em um culto)
-// ─────────────────────────────────────────────
-
-model Escala {
-  id                String             @id @default(uuid()) @db.Uuid
-  usuarioId         String             @map("usuario_id") @db.Uuid
-  ministerioId      String             @map("ministerio_id") @db.Uuid
-  cultoId           String             @map("culto_id") @db.Uuid
-  statusConfirmacao StatusConfirmacao  @default(PENDENTE) @map("status_confirmacao")
-  tokenConfirmacao  String?            @unique @map("token_confirmacao")
-  tokenExpiraEm     DateTime?          @map("token_expira_em")
-  criadoEm          DateTime           @default(now()) @map("criado_em")
-  atualizadoEm      DateTime           @updatedAt @map("atualizado_em")
-
-  usuario    Usuario    @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  ministerio Ministerio @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
-  culto      Culto      @relation(fields: [cultoId], references: [id], onDelete: Cascade)
-
-  @@unique([usuarioId, cultoId], name: "conflito_agenda_usuario_culto")
-  @@index([ministerioId, cultoId])
-  @@index([cultoId])
-  @@map("escalas")
-}
-
-// ─────────────────────────────────────────────
-// CONFIGURAÇÃO DO SISTEMA (singleton)
-// ─────────────────────────────────────────────
-
-model ConfiguracaoSistema {
-  id                                  Int      @id @default(1)
-  diasAntecedenciaAberturaProximoMes  Int      @default(7) @map("dias_antecedencia_abertura_proximo_mes")
-  horasAntecedenciaLembretePresenca   Int      @default(24) @map("horas_antecedencia_lembrete_presenca")
-  atualizadoEm                        DateTime @updatedAt @map("atualizado_em")
-
-  @@map("configuracoes_sistema")
-}
-
-// ─────────────────────────────────────────────
-// LOG DE AUDITORIA
-// ─────────────────────────────────────────────
-
-model LogAuditoria {
-  id              String        @id @default(uuid()) @db.Uuid
-  usuarioId       String?       @map("usuario_id") @db.Uuid
-  acao            AcaoAuditoria
-  entidadeAfetada String        @map("entidade_afetada")
-  entidadeId      String?       @map("entidade_id")
-  detalhes        Json?
-  criadoEm        DateTime      @default(now()) @map("criado_em")
-
-  usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
-
-  @@index([usuarioId])
-  @@index([entidadeAfetada, entidadeId])
-  @@index([criadoEm])
-  @@map("logs_auditoria")
 }
