@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { sair } from "@/lib/auth/actions";
 import {
   CalendarDays,
   LayoutDashboard,
@@ -14,7 +15,7 @@ import {
 const itens = [
   {
     nome: "Dashboard",
-    href: "/",
+    href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -59,11 +60,10 @@ export function Sidebar() {
             <Link
               key={item.nome}
               href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
-                ativo
+              className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${ativo
                   ? "bg-primary text-white"
                   : "hover:bg-accent/20"
-              }`}
+                }`}
             >
               <Icon size={20} />
               <span>{item.nome}</span>
@@ -73,10 +73,15 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t p-4">
-        <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-accent/20">
-          <LogOut size={20} />
-          <span>Sair</span>
-        </button>
+        <form action={sair}>
+          <button
+            type="submit"
+            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-accent/20"
+          >
+            <LogOut size={20} />
+            <span>Sair</span>
+          </button>
+        </form>
       </div>
     </aside>
   );

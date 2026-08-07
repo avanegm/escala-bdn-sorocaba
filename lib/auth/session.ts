@@ -26,14 +26,37 @@ export const obterUsuarioAutenticado = cache(async (): Promise<UsuarioAutenticad
     return null
   }
 
-  const usuario = await prisma.usuario.findUnique({
-    where: { id: user.id },
+let usuario = await prisma.usuario.findUnique({
+  where: { id: user.id },
+  include: {
+    vinculosMinisterio: {
+      select: {
+        ministerioId: true,
+        papel: true,
+      },
+    },
+  },
+})
+
+if (!usuario) {
+  usuario = await prisma.usuario.create({
+    data: {
+      id: user.id,
+      nome: user.user_metadata?.name ?? user.email?.split("@")[0] ?? "Usuário",
+      email: user.email!,
+      ativo: true,
+      papelGlobal: null,
+    },
     include: {
       vinculosMinisterio: {
-        select: { ministerioId: true, papel: true },
+        select: {
+          ministerioId: true,
+          papel: true,
+        },
       },
     },
   })
+}
 
   if (!usuario || !usuario.ativo) {
     return null
