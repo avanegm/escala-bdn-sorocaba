@@ -25,9 +25,9 @@ export async function criarUsuario(formData: FormData) {
   }
 
   if (
-    papelGlobal !== "ADMIN" &&
+    papelGlobal !== "MEMBRO" &&
     papelGlobal !== "SECRETARIO" &&
-    papelGlobal !== "MEMBRO"
+    papelGlobal !== "ADMIN"
   ) {
     throw new Error("Papel global inválido.");
   }
@@ -53,11 +53,12 @@ export async function criarUsuario(formData: FormData) {
     }
   );
 
-  const { data, error } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    password: senha,
-    email_confirm: true,
-  });
+  const { data, error } =
+    await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: senha,
+      email_confirm: true,
+    });
 
   if (error || !data.user) {
     throw new Error(
@@ -67,12 +68,17 @@ export async function criarUsuario(formData: FormData) {
   }
 
   try {
+    const papel =
+      papelGlobal === "MEMBRO"
+        ? null
+        : (papelGlobal as PapelGlobal);
+
     await prisma.usuario.create({
       data: {
         id: data.user.id,
         nome,
         email,
-        papelGlobal: papelGlobal as PapelGlobal,
+        papelGlobal: papel,
       },
     });
   } catch (erro) {
