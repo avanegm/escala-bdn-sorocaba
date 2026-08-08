@@ -25,11 +25,10 @@ export async function criarUsuario(formData: FormData) {
   }
 
   if (
-    papelGlobal !== "MEMBRO" &&
-    papelGlobal !== "SECRETARIO" &&
-    papelGlobal !== "ADMIN"
+    papelGlobal !== "ADMIN" &&
+    papelGlobal !== "SECRETARIO"
   ) {
-    throw new Error("Papel inválido.");
+    throw new Error("Papel global inválido.");
   }
 
   const usuarioExistente = await prisma.usuario.findUnique({
@@ -62,7 +61,8 @@ export async function criarUsuario(formData: FormData) {
 
   if (error || !data.user) {
     throw new Error(
-      error?.message || "Não foi possível criar o usuário no Supabase."
+      error?.message ||
+        "Não foi possível criar o usuário no Supabase."
     );
   }
 
@@ -78,13 +78,17 @@ export async function criarUsuario(formData: FormData) {
   } catch (erro) {
     await supabaseAdmin.auth.admin.deleteUser(data.user.id);
 
-    console.error("Erro ao criar usuário no Prisma:", erro);
+    console.error(
+      "Erro ao criar usuário no Prisma:",
+      erro
+    );
 
     throw new Error(
-      "O usuário não pôde ser cadastrado no sistema."
+      "O usuário foi criado no Auth, mas não pôde ser criado no banco."
     );
   }
 
   revalidatePath("/administracao");
+
   redirect("/administracao");
 }
