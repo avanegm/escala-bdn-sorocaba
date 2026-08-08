@@ -26,7 +26,8 @@ export async function criarUsuario(formData: FormData) {
 
   if (
     papelGlobal !== "ADMIN" &&
-    papelGlobal !== "SECRETARIO"
+    papelGlobal !== "SECRETARIO" &&
+    papelGlobal !== "MEMBRO"
   ) {
     throw new Error("Papel global inválido.");
   }
@@ -52,12 +53,11 @@ export async function criarUsuario(formData: FormData) {
     }
   );
 
-  const { data, error } =
-    await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: senha,
-      email_confirm: true,
-    });
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password: senha,
+    email_confirm: true,
+  });
 
   if (error || !data.user) {
     throw new Error(
