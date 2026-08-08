@@ -9,10 +9,13 @@ import {
   exigirPermissaoMinisterio,
 } from "@/lib/auth/permissoes";
 
-export async function criarMinisterio(formData: FormData) {
+export async function criarMinisterio(
+  formData: FormData
+) {
   await podeAdministracaoGlobal();
 
-  const nome = formData.get("nome")?.toString().trim();
+  const nome =
+    formData.get("nome")?.toString().trim();
 
   if (!nome) {
     throw new Error("Nome obrigatório.");
@@ -25,6 +28,7 @@ export async function criarMinisterio(formData: FormData) {
   });
 
   revalidatePath("/ministerios");
+
   redirect("/ministerios");
 }
 
@@ -32,45 +36,65 @@ export async function adicionarMembro(
   ministerioId: string,
   formData: FormData
 ) {
-
-
   await podeAdministracaoGlobal();
 
-  const usuarioId = formData.get("usuarioId")?.toString();
-  const papel = formData.get("papel")?.toString();
+  const usuarioId =
+    formData.get("usuarioId")?.toString();
+
+  const papel =
+    formData.get("papel")?.toString();
 
   if (!usuarioId || !papel) {
     throw new Error("Dados inválidos.");
   }
 
-  const vinculoExistente = await prisma.usuarioMinisterio.findFirst({
-    where: {
-      usuarioId,
-      ministerioId,
-    },
-  });
+  if (
+    papel !== "LIDER" &&
+    papel !== "MEMBRO"
+  ) {
+    throw new Error(
+      "Papel de ministério inválido."
+    );
+  }
+
+  const vinculoExistente =
+    await prisma.usuarioMinisterio.findFirst({
+      where: {
+        usuarioId,
+        ministerioId,
+      },
+    });
 
   if (vinculoExistente) {
-    throw new Error("Este usuário já pertence ao ministério.");
+    throw new Error(
+      "Este usuário já pertence ao ministério."
+    );
   }
 
   await prisma.usuarioMinisterio.create({
     data: {
       usuarioId,
       ministerioId,
-      papel: papel as any,
+      papel,
     },
   });
 
-  revalidatePath(`/ministerios/${ministerioId}`);
-  redirect(`/ministerios/${ministerioId}`);
+  revalidatePath(
+    `/ministerios/${ministerioId}`
+  );
+
+  redirect(
+    `/ministerios/${ministerioId}`
+  );
 }
 
 export async function removerMembro(
   ministerioId: string,
   usuarioMinisterioId: string
 ) {
-  await exigirPermissaoMinisterio(ministerioId);
+  await exigirPermissaoMinisterio(
+    ministerioId
+  );
 
   await prisma.usuarioMinisterio.delete({
     where: {
@@ -78,23 +102,30 @@ export async function removerMembro(
     },
   });
 
-  revalidatePath(`/ministerios/${ministerioId}`);
+  revalidatePath(
+    `/ministerios/${ministerioId}`
+  );
 }
 
 export async function alterarPapel(
   ministerioId: string,
   usuarioMinisterioId: string
 ) {
-  await exigirPermissaoMinisterio(ministerioId);
+  await exigirPermissaoMinisterio(
+    ministerioId
+  );
 
-  const vinculo = await prisma.usuarioMinisterio.findUnique({
-    where: {
-      id: usuarioMinisterioId,
-    },
-  });
+  const vinculo =
+    await prisma.usuarioMinisterio.findUnique({
+      where: {
+        id: usuarioMinisterioId,
+      },
+    });
 
   if (!vinculo) {
-    throw new Error("Vínculo não encontrado.");
+    throw new Error(
+      "Vínculo não encontrado."
+    );
   }
 
   await prisma.usuarioMinisterio.update({
@@ -102,9 +133,14 @@ export async function alterarPapel(
       id: usuarioMinisterioId,
     },
     data: {
-      papel: vinculo.papel === "LIDER" ? "MEMBRO" : "LIDER",
+      papel:
+        vinculo.papel === "LIDER"
+          ? "MEMBRO"
+          : "LIDER",
     },
   });
 
-  revalidatePath(`/ministerios/${ministerioId}`);
+  revalidatePath(
+    `/ministerios/${ministerioId}`
+  );
 }
