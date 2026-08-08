@@ -12,42 +12,72 @@ import {
   Users,
 } from "lucide-react";
 
-const itens = [
-  {
-    nome: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    nome: "Ministérios",
-    href: "/ministerios",
-    icon: Users,
-  },
-  {
-    nome: "Escalas",
-    href: "/escalas",
-    icon: CalendarDays,
-  },
-  {
-    nome: "Administração",
-    href: "/administracao",
-    icon: ShieldCheck,
-  },
-  {
+type SidebarProps = {
+  papelGlobal: "ADMIN" | "SECRETARIO" | null;
+};
+
+export function Sidebar({ papelGlobal }: SidebarProps) {
+  const pathname = usePathname();
+
+  const administrador =
+    papelGlobal === "ADMIN" ||
+    papelGlobal === "SECRETARIO";
+
+  const itens = [
+    {
+      nome: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+    },
+  ];
+
+  if (administrador) {
+    itens.push(
+      {
+        nome: "Ministérios",
+        href: "/ministerios",
+        icon: Users,
+      },
+      {
+        nome: "Cultos",
+        href: "/cultos",
+        icon: CalendarDays,
+      },
+      {
+        nome: "Escalas",
+        href: "/escalas",
+        icon: CalendarDays,
+      },
+      {
+        nome: "Administração",
+        href: "/administracao",
+        icon: ShieldCheck,
+      }
+    );
+  } else {
+    itens.push({
+      nome: "Próximos Cultos",
+      href: "/cultos",
+      icon: CalendarDays,
+    });
+  }
+
+  itens.push({
     nome: "Meu Perfil",
     href: "/perfil",
     icon: UserCircle,
-  },
-];
-
-export function Sidebar() {
-  const pathname = usePathname();
+  });
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r bg-card">
+    <aside className="flex h-screen w-64 flex-col border-r bg-background">
       <div className="border-b p-6">
-        <h2 className="text-xl font-bold text-primary">🕊 Escala BDN</h2>
-        <p className="text-sm text-muted-foreground">Sorocaba</p>
+        <h1 className="text-3xl font-bold">
+          🕊 Escala BDN
+        </h1>
+
+        <p className="text-muted-foreground">
+          Sorocaba
+        </p>
       </div>
 
       <nav className="flex flex-1 flex-col gap-2 p-4">
@@ -60,10 +90,11 @@ export function Sidebar() {
             <Link
               key={item.nome}
               href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${ativo
+              className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
+                ativo
                   ? "bg-primary text-white"
                   : "hover:bg-accent/20"
-                }`}
+              }`}
             >
               <Icon size={20} />
               <span>{item.nome}</span>

@@ -9,14 +9,16 @@ datasource db {
 }
 
 model Usuario {
-  id                 String              @id @db.Uuid
-  nome               String
-  email              String              @unique
-  papelGlobal        PapelGlobal?        @map("papel_global")
-  ativo              Boolean             @default(true)
-  criadoEm           DateTime            @default(now()) @map("criado_em")
-  atualizadoEm       DateTime            @updatedAt @map("atualizado_em")
-  escalas            Escala[]
+  id          String       @id @db.Uuid
+  nome        String
+  email       String       @unique
+  papelGlobal PapelGlobal? @map("papel_global")
+  ativo       Boolean      @default(true)
+
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  escalas            EscalaParticipante[]
   logsAuditoria      LogAuditoria[]
   vinculosMinisterio UsuarioMinisterio[]
 
@@ -25,12 +27,14 @@ model Usuario {
 }
 
 model Ministerio {
-  id               String              @id @default(uuid()) @db.Uuid
-  nome             String              @unique
-  logoUrl          String?             @map("logo_url")
-  ativo            Boolean             @default(true)
-  criadoEm         DateTime            @default(now()) @map("criado_em")
-  atualizadoEm     DateTime            @updatedAt @map("atualizado_em")
+  id      String  @id @default(uuid()) @db.Uuid
+  nome    String  @unique
+  logoUrl String? @map("logo_url")
+  ativo   Boolean @default(true)
+
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
   escalas          Escala[]
   vinculosUsuarios UsuarioMinisterio[]
 
@@ -39,71 +43,131 @@ model Ministerio {
 }
 
 model UsuarioMinisterio {
-  id           String          @id @default(uuid()) @db.Uuid
-  usuarioId    String          @map("usuario_id") @db.Uuid
-  ministerioId String          @map("ministerio_id") @db.Uuid
-  papel        PapelMinisterio
-  criadoEm     DateTime        @default(now()) @map("criado_em")
-  ministerio   Ministerio      @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
-  usuario      Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  id String @id @default(uuid()) @db.Uuid
+
+  usuarioId    String @map("usuario_id") @db.Uuid
+  ministerioId String @map("ministerio_id") @db.Uuid
+
+  papel PapelMinisterio
+
+  criadoEm DateTime @default(now()) @map("criado_em")
+
+  usuario    Usuario    @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  ministerio Ministerio @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
 
   @@unique([usuarioId, ministerioId], name: "usuario_ministerio_unico")
-  @@index([ministerioId])
   @@index([usuarioId])
+  @@index([ministerioId])
   @@map("usuarios_ministerios")
 }
 
 model Culto {
-  id              String    @id @default(uuid()) @db.Uuid
-  dataHoraCulto   DateTime  @unique @map("data_hora_culto")
-  dataHoraChegada DateTime  @map("data_hora_chegada")
-  tipo            TipoCulto
-  nome            String?
-  criadoEm        DateTime  @default(now()) @map("criado_em")
-  escalas         Escala[]
+  id String @id @default(uuid()) @db.Uuid
+
+  dataHoraCulto DateTime @unique @map("data_hora_culto")
+
+  nome String?
+
+  tipo TipoCulto
+
+  status StatusCulto @default(PLANEJADO)
+
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  escalas Escala[]
 
   @@index([tipo])
+  @@index([status])
   @@map("cultos")
 }
 
-model Escala {
-  id                String            @id @default(uuid()) @db.Uuid
-  usuarioId         String            @map("usuario_id") @db.Uuid
-  ministerioId      String            @map("ministerio_id") @db.Uuid
-  cultoId           String            @map("culto_id") @db.Uuid
-  statusConfirmacao StatusConfirmacao @default(PENDENTE) @map("status_confirmacao")
-  tokenConfirmacao  String?           @unique @map("token_confirmacao")
-  tokenExpiraEm     DateTime?         @map("token_expira_em")
-  criadoEm          DateTime          @default(now()) @map("criado_em")
-  atualizadoEm      DateTime          @updatedAt @map("atualizado_em")
-  culto             Culto             @relation(fields: [cultoId], references: [id], onDelete: Cascade)
-  ministerio        Ministerio        @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
-  usuario           Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+model CultoRegular {
+  id String @id @default(uuid()) @db.Uuid
 
-  @@unique([usuarioId, cultoId], name: "conflito_agenda_usuario_culto")
-  @@index([ministerioId, cultoId])
+  nome String
+
+  diaSemana DiaSemana
+
+  horario String
+
+  ativo Boolean @default(true)
+
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  @@index([ativo])
+  @@map("cultos_regulares")
+}
+
+model Escala {
+  id String @id @default(uuid()) @db.Uuid
+
+  cultoId      String @map("culto_id") @db.Uuid
+  ministerioId String @map("ministerio_id") @db.Uuid
+
+  ordem Int @default(0)
+
+  observacao String?
+
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  culto      Culto      @relation(fields: [cultoId], references: [id], onDelete: Cascade)
+  ministerio Ministerio @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
+
+  participantes EscalaParticipante[]
+
+  @@unique([cultoId, ministerioId])
   @@index([cultoId])
+  @@index([ministerioId])
   @@map("escalas")
 }
 
+model EscalaParticipante {
+  id String @id @default(uuid()) @db.Uuid
+
+  escalaId  String @map("escala_id") @db.Uuid
+  usuarioId String @map("usuario_id") @db.Uuid
+
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  escala  Escala  @relation(fields: [escalaId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([escalaId, usuarioId])
+  @@index([escalaId])
+  @@index([usuarioId])
+  @@map("escalas_participantes")
+}
+
 model ConfiguracaoSistema {
-  id                                 Int      @id @default(1)
-  diasAntecedenciaAberturaProximoMes Int      @default(7) @map("dias_antecedencia_abertura_proximo_mes")
-  horasAntecedenciaLembretePresenca  Int      @default(24) @map("horas_antecedencia_lembrete_presenca")
-  atualizadoEm                       DateTime @updatedAt @map("atualizado_em")
+  id Int @id @default(1)
+
+  diasAntesBloquearAlteracoes Int @default(1) @map("dias_antes_bloquear_alteracoes")
+
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
 
   @@map("configuracoes_sistema")
 }
 
 model LogAuditoria {
-  id              String        @id @default(uuid()) @db.Uuid
-  usuarioId       String?       @map("usuario_id") @db.Uuid
-  acao            AcaoAuditoria
-  entidadeAfetada String        @map("entidade_afetada")
-  entidadeId      String?       @map("entidade_id")
-  detalhes        Json?
-  criadoEm        DateTime      @default(now()) @map("criado_em")
-  usuario         Usuario?      @relation(fields: [usuarioId], references: [id])
+  id String @id @default(uuid()) @db.Uuid
+
+  usuarioId String? @map("usuario_id") @db.Uuid
+
+  acao AcaoAuditoria
+
+  entidadeAfetada String @map("entidade_afetada")
+
+  entidadeId String? @map("entidade_id")
+
+  detalhes Json?
+
+  criadoEm DateTime @default(now()) @map("criado_em")
+
+  usuario Usuario? @relation(fields: [usuarioId], references: [id])
 
   @@index([usuarioId])
   @@index([entidadeAfetada, entidadeId])
@@ -126,22 +190,42 @@ enum TipoCulto {
   EXTRAORDINARIO
 }
 
-enum StatusConfirmacao {
-  PENDENTE
-  CONFIRMADO
-  AUSENTE
+enum StatusCulto {
+  PLANEJADO
+  PUBLICADO
+  FINALIZADO
+}
+
+enum DiaSemana {
+  DOMINGO
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
 }
 
 enum AcaoAuditoria {
   CRIACAO_USUARIO
   EDICAO_USUARIO
   EXCLUSAO_USUARIO
-  INCLUSAO_MEMBRO_MINISTERIO
-  REMOCAO_MEMBRO_MINISTERIO
-  DEFINICAO_LIDER
+
   CRIACAO_MINISTERIO
   EDICAO_MINISTERIO
   EXCLUSAO_MINISTERIO
+
+  INCLUSAO_MEMBRO_MINISTERIO
+  REMOCAO_MEMBRO_MINISTERIO
+  DEFINICAO_LIDER
+
+  CRIACAO_CULTO_REGULAR
+  EDICAO_CULTO_REGULAR
+  EXCLUSAO_CULTO_REGULAR
+
+  GERACAO_PROXIMO_MES
+
   ALTERACAO_CONFIGURACAO
+
   EDICAO_ESCALA_EM_NOME_DE
 }

@@ -1,265 +1,284 @@
-# PRD — Escala Bola de Neve Sorocaba
+🚀 MVP v2 — Escala BDN Sorocaba
+Objetivo
 
-**Versão:** 2.0 (consolidada com decisões de negócio do MVP)
-**Status:** Em revisão — aguardando aprovação para iniciar arquitetura técnica
+Automatizar a organização dos voluntários dos cultos, reduzindo ao máximo o trabalho manual do secretário e dos líderes.
 
----
+Princípios do sistema
+1. Tudo que puder ser automático, será automático.
 
-## 1. Visão Geral
+O usuário não deve repetir tarefas.
 
-### Nome do Projeto
-Escala Bola de Neve Sorocaba
+O sistema deve cuidar da maior parte da operação.
 
-### Objetivo
-Desenvolver um sistema web responsivo para gerenciamento das escalas dos ministérios da Igreja Bola de Neve Sorocaba, substituindo o processo manual de organização das escalas. O sistema permite que cada membro informe em quais cultos deseja servir, visualize a escala do seu ministério e confirme sua presença antes de cada culto.
+2. O secretário não monta escalas.
 
-O acesso será realizado pelo navegador, em computadores e dispositivos móveis, sem necessidade de instalação de aplicativo.
+O secretário apenas administra o sistema.
 
-### Escopo
-O sistema será desenvolvido **exclusivamente para a Igreja Bola de Neve Sorocaba**. Não há requisito de suporte a múltiplas igrejas (multi-tenant) nesta versão, e esse cenário não deve ser considerado no projeto atual.
+Ele:
 
-### Objetivo da Primeira Versão (MVP)
-O foco desta versão é **substituir o processo manual** atualmente realizado pela igreja, mantendo o fluxo de trabalho já utilizado pelos ministérios. A prioridade é entregar um sistema **simples, intuitivo, rápido de usar e fácil de manter**. Funcionalidades que aumentem a complexidade sem gerar valor real para o uso cotidiano devem ser evitadas nesta fase.
+cadastra usuários;
+cadastra ministérios;
+configura os cultos regulares;
+cria cultos extraordinários.
 
----
+Nada além disso.
 
-## 2. Objetivos do Sistema
+3. O membro monta sua própria participação.
 
-- Centralizar as escalas dos ministérios.
-- Facilitar o preenchimento das escalas pelos membros.
-- Permitir visualização das escalas de forma simples e acessível.
-- Reduzir falhas de comunicação.
-- Automatizar confirmações de presença.
-- Facilitar a administração dos ministérios.
+Cada membro escolhe em quais cultos deseja servir.
 
----
+Não existe aprovação.
 
-## 3. Modelo de Permissões
+Não existe distribuição manual.
 
-**Princípio central:** as permissões **não pertencem ao usuário de forma global** — elas pertencem à relação **Usuário × Ministério**.
+Não existe líder montando escala.
 
-Isso significa que um mesmo usuário pode, simultaneamente:
-- Ser **Líder** de um ministério;
-- Ser **Membro** de outro ministério;
-- Ser **Líder** de mais de um ministério, se necessário.
+Fluxo completo
+Administração
 
-O sistema deve suportar esse comportamento de forma nativa no modelo de dados (a permissão é um atributo do vínculo usuário-ministério, não do usuário isoladamente).
+Uma única vez.
 
-### 3.1 Papéis do Sistema
+Configura:
 
-#### Administrador
-Acesso total ao sistema. Pode:
-- Criar, editar e excluir usuários;
-- Criar e remover Secretários;
-- Criar, editar e excluir ministérios;
-- Alterar qualquer configuração do sistema;
-- Gerenciar todos os dados.
+Cultos Regulares
 
-#### Secretário
-Responsável pela administração operacional da igreja. Pode:
-- Criar, editar e excluir ministérios;
-- Criar e editar usuários;
-- Adicionar e remover membros dos ministérios;
-- Definir ou remover Líderes;
-- Visualizar todos os ministérios.
+✓ Quinta-feira
+20:00
+Chegada 19:30
 
-Não pode:
-- Criar ou remover Secretários;
-- Alterar configurações gerais do sistema.
+✓ Domingo
+10:00
+Chegada 09:30
 
-#### Líder
-Escopo restrito ao(s) ministério(s) em que possui liderança. Pode:
-- Visualizar apenas os ministérios onde possui liderança;
-- Adicionar e remover membros do(s) próprio(s) ministério(s);
-- Visualizar a escala do(s) próprio(s) ministério(s);
-- Visualizar confirmações de presença.
+Também cadastra:
 
-Não pode alterar permissões de usuários.
+Ministérios
 
-#### Membro
-Pode:
-- Visualizar apenas os ministérios dos quais participa;
-- Preencher sua própria escala;
-- Editar sua própria escala;
-- Confirmar presença.
+Louvor
 
----
+Recepção
 
-## 4. Ministérios (Primeira Versão)
+Kids
 
-- Boas-vindas
-- Ministério Infantil
-- Assistência Social
+Mídia
 
-O sistema deve permitir o cadastro de novos ministérios futuramente sem necessidade de alterações estruturais.
+Intercessão
+Sistema
 
----
+Automaticamente.
 
-## 5. Fluxo Principal
+Todo mês.
 
-1. Usuário faz login.
-2. Visualiza a tela inicial com seus ministérios em formato de cards.
-3. Escolhe um ministério.
-4. Visualiza a escala do mês corrente.
-5. Caso ainda não tenha preenchido sua escala, clica em **Preencher Escala**.
-6. Seleciona apenas os cultos em que deseja servir.
-7. Salva.
-8. Seu nome passa a aparecer automaticamente na tabela daquele culto.
-9. O membro pode editar sua escala a qualquer momento durante o mês (não há fechamento de escala).
-10. Próximo ao culto, recebe um único e-mail automático para confirmar presença.
-11. Caso informe que não poderá comparecer, o líder recebe um e-mail de aviso.
+Cria todos os cultos.
 
-**Importante:** não há aprovação por parte do líder — a própria seleção do membro representa sua escala.
+Exemplo:
 
----
+Agosto
 
-## 6. Cultos
+Domingo 02
 
-### 6.1 Cultos Regulares (geração automática)
-Os cultos regulares são gerados automaticamente pelo sistema todo mês, sem necessidade de cadastro manual:
+Quinta 06
 
-| Dia | Culto | Chegada |
-|---|---|---|
-| Quinta-feira | 20h | 19h |
-| Domingo (manhã) | 10h | 9h |
-| Domingo (noite) | 18h | 17h |
+Domingo 09
 
-### 6.2 Cultos Extraordinários
-Administradores e Secretários podem criar cultos extraordinários adicionais (ex.: Natal, Páscoa, conferências, congressos, vigílias, eventos especiais). Esses cultos aparecem normalmente nas escalas do mês em que forem criados.
+Quinta 13
 
-### 6.3 Conflito de Agenda
-Um usuário **não pode** estar escalado em dois ministérios no mesmo culto (mesma data e horário). O sistema deve impedir o salvamento da escala nesse caso e informar claramente ao usuário o motivo do bloqueio.
+Domingo 16
 
----
+...
 
-## 7. Ciclo de Vida das Escalas
+Depois cria automaticamente todas as Escalas.
 
-- As escalas são organizadas **por mês**.
-- **As escalas nunca são fechadas** — membros podem editar sua escala a qualquer momento durante o mês corrente.
-- O sistema abre automaticamente o preenchimento do **mês seguinte** com uma antecedência configurável antes do término do mês atual.
-  - Na primeira versão, a antecedência padrão é de **7 dias**.
-  - Esse valor deve ser **configurável pelo Administrador** nas configurações do sistema.
+Exemplo:
 
-**Exemplo de funcionamento (antecedência de 7 dias):**
-- Entre 24 e 31 de julho: agosto já está disponível para preenchimento (em paralelo a julho).
-- Em 1º de agosto: agosto passa a ser automaticamente o mês principal.
-- Entre 25 e 31 de agosto: setembro já fica disponível para preenchimento.
+Domingo 09
 
-Esse processo deve ocorrer de forma automática, sem intervenção manual.
+↓
 
----
+Louvor
 
-## 8. Confirmação de Presença
+Recepção
 
-- O sistema envia **apenas um e-mail automático** antes de cada culto.
-- O membro responde:
-  - **Confirmo presença**; ou
-  - **Não poderei comparecer**.
-- Caso informe ausência, o líder do ministério recebe automaticamente um e-mail informando a indisponibilidade.
+Kids
 
-**Fora de escopo nesta versão:**
-- Alterações de situação **após** a resposta inicial — caso o membro precise mudar sua resposta depois de enviada, essa comunicação continua sendo feita manualmente pelo WhatsApp do ministério, como já ocorre hoje. Não há fluxo de cancelamento posterior no sistema.
-- Alterações de escala muito próximas ao culto também continuam sendo tratadas pelo WhatsApp do ministério — o sistema não substitui esse processo.
+Mídia
 
----
+Intercessão
 
-## 9. Substituição de Integrantes
+Nenhum clique do secretário.
 
-**Fora de escopo nesta versão.** Não há funcionalidade de substituição automática. Quando alguém informa ausência, a reorganização da escala continua sendo feita pelo líder através do WhatsApp do ministério.
+Membro
 
----
+Ao entrar.
 
-## 10. Quantidade de Pessoas por Culto
+Visualiza:
 
-**Fora de escopo nesta versão.** O sistema não controla quantidade mínima, máxima ou ideal de pessoas por culto. Essa regra não existe hoje na operação da igreja e não faz parte do escopo desta versão.
+Próximos Cultos
 
----
+Domingo 02
 
-## 11. Auditoria
+Quinta 06
 
-O sistema deve registrar alterações administrativas importantes, incluindo:
-- Criação de usuários;
-- Edição de usuários;
-- Inclusão e remoção de membros em ministérios;
-- Criação e exclusão de ministérios;
-- Alteração de permissões.
+Domingo 09
 
-Esses registros ficam visíveis **apenas para Administradores e Secretários**.
+...
 
----
+Ao abrir um culto.
 
-## 12. Tela Inicial
+Visualiza apenas os ministérios dos quais participa.
 
-Após o login, o usuário visualiza seus ministérios em formato de cards. Cada card contém:
-- Logo do ministério;
-- Nome do ministério;
-- Próxima escala do usuário naquele ministério.
+Exemplo.
 
-Caso o usuário ainda não tenha preenchido sua escala do mês naquele ministério, o card informa isso e apresenta o botão **Preencher Escala**.
+Matheus pertence a:
 
-Após o usuário concluir uma escala, o sistema atualiza automaticamente o card para exibir a próxima escala futura daquele ministério.
+Louvor
 
-**Fora de escopo nesta versão:** uma agenda consolidada exibindo todos os compromissos do mês do usuário entre múltiplos ministérios.
+Mídia
 
----
+Então verá:
 
-## 13. Página do Ministério
+Domingo 09
 
-Cada ministério possui uma página própria contendo:
-- Logo do ministério;
-- Nome do ministério;
-- Botão Preencher Escala;
-- Tabela com as escalas do mês.
+Escolha onde deseja servir
 
-A tabela contém:
-- Data;
-- Horário do culto;
-- Horário de chegada;
-- Lista de pessoas escaladas.
+○ Louvor
 
-Todos os membros daquele ministério podem visualizar a tabela.
+○ Mídia
 
----
+Nunca verá:
 
-## 14. Identidade Visual
+Kids
 
-- Logo oficial da Igreja Bola de Neve Sorocaba na tela de login.
-- Logo oficial de cada ministério nos respectivos cards e páginas.
-- Design moderno, limpo e intuitivo.
+Recepção
 
----
+Intercessão
+Escolha
 
-## 15. Requisitos Técnicos
+O membro escolhe somente um ministério por culto.
 
-- Sistema web responsivo, funcionando em computadores, tablets e celulares.
-- Login por e-mail e senha.
-- **Recuperação de senha por e-mail.**
-- Banco de dados centralizado.
-- Atualizações convencionais de interface — **sem** uso de tecnologia de tempo real (websockets ou similar). Recarregar/revalidar a página é suficiente para este projeto.
-- Arquitetura organizada para permitir manutenção e evolução futura, dentro do escopo definido (sem necessidade de suportar multi-tenant).
+Exemplo.
 
----
+Domingo 02
 
-## 16. Fora de Escopo (MVP) — Resumo
+✔ Louvor
 
-Para deixar explícito o que **não** será implementado nesta primeira versão, evitando ambiguidade em etapas futuras:
+No culto seguinte.
 
-- Multi-tenant / múltiplas igrejas.
-- Aprovação de escala por parte do líder.
-- Fechamento formal de escala.
-- Cancelamento de confirmação de presença após resposta inicial.
-- Substituição automática de integrantes ausentes.
-- Controle de quantidade mínima/máxima de pessoas por culto.
-- Agenda consolidada de compromissos entre ministérios.
-- Atualizações em tempo real.
+Quinta 06
 
-Esses pontos continuam sendo resolvidos pelos processos manuais já existentes (WhatsApp do ministério) e podem ser reavaliados em versões futuras, caso façam sentido.
+✔ Mídia
 
----
+No outro.
 
-## 17. Histórico de Revisão
+Domingo 09
 
-| Versão | Data | Alteração |
-|---|---|---|
-| 1.0 | — | PRD inicial |
-| 2.0 | 30/07/2026 | Consolidação das decisões de negócio do MVP: modelo de permissões por Usuário×Ministério, geração automática de cultos, ciclo de vida das escalas, itens explicitamente marcados como fora de escopo, auditoria, conflito de agenda, recuperação de senha |
+✔ Louvor
+
+Cada culto é independente.
+
+Alteração
+
+Enquanto o prazo estiver aberto.
+
+O membro poderá.
+
+alterar o ministério;
+remover sua participação;
+escolher outro.
+
+Sem intervenção do secretário.
+
+Encerramento
+
+O sistema fecha automaticamente as alterações.
+
+Exemplo.
+
+24 horas antes do culto
+
+Após isso.
+
+Nenhuma alteração é permitida.
+
+A escala fica congelada.
+
+Visualização
+
+Todos conseguem visualizar.
+
+Domingo 09
+
+Louvor
+
+Matheus
+
+João
+
+Pedro
+
+Somente leitura.
+
+Cultos extraordinários
+
+Continuam sendo criados manualmente.
+
+Exemplo.
+
+Natal
+Ano Novo
+Batismo
+Conferência
+Congresso
+Aniversário da Igreja
+Papéis
+ADMIN
+
+Configura todo o sistema.
+
+SECRETÁRIO
+
+Mesmo acesso do Admin, exceto configurações sensíveis (se decidirmos diferenciar futuramente).
+
+LÍDER
+
+Não aprova.
+
+Não monta escala.
+
+Apenas visualiza a organização do seu ministério.
+
+MEMBRO
+
+Escolhe em quais cultos deseja servir.
+
+Funcionalidades removidas do MVP
+
+❌ Aprovação pelo líder.
+
+❌ Secretário distribuindo participantes.
+
+❌ Adicionar ministérios manualmente em cada culto.
+
+❌ Criar cultos regulares manualmente.
+
+Novo roadmap
+Sprint 3
+3.1 Configuração da Igreja
+Configurar cultos regulares.
+Configurar horários.
+Configurar antecedência para bloqueio das alterações.
+3.2 Geração Automática
+Gerar cultos do mês.
+Criar automaticamente todas as Escalas para todos os ministérios ativos.
+3.3 Escolha do Membro
+Listar próximos cultos.
+Mostrar somente os ministérios do usuário.
+Escolher onde servir.
+Alterar escolha.
+Remover escolha.
+3.4 Visualização
+Todos conseguem visualizar quem servirá em cada ministério.
+3.5 Cultos Extraordinários
+Cadastro manual.
+Edição.
+Cancelamento.
